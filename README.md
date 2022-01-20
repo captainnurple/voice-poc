@@ -177,4 +177,71 @@ exports.handler = async (event) => {
 
 ```
 
-If everything is working, you should be able to register a new user, and AFTER clicking the confirmation email, the Netlify function log should output the user object for that new signup!
+Commit and push to test live.
+
+If everything is working, you should be able to register a new user, and AFTER clicking the confirmation email, the Netlify function log should output the user object for that new signup! (To view the function log you go to the Functions page and select the identity signup function).
+
+## Wiring it up to Fauna
+
+Netlify can now include anything you npm install in root, so add the following:
+
+`npm i node-fetch@2.6.2`
+
+(node-fetch v3 requires different syntax so avoid it for now)
+
+Navigate to your database in Fauna and go to the "Security" tab on the left. Select create a new key, and select "Server" key in the Role dropdown. Give it a name and the Key will appear.
+
+Copy the key and go back over to Netlify.
+
+Go to Site Settings > Build & Deploy > Environment > Edit Variables
+
+Add an environment variable called FAUNA_SERVER_KEY and paste in the Key you copied above.
+
+(Note for local dev you have to kill and restart `netlify dev` to update these keys I think.)
+
+Now modify `identity-signup` as follows:
+
+```
+const fetch = require("node-fetch");
+
+exports.handler = async (event) => {
+  const { user } = JSON.parse(event.body);
+  console.log(JSON.stringify(user, null, 2));
+
+  const netlifyID = user.id;
+  const email = user.email;
+
+  const response = await fetch("https://graphql.fauna.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.FAUNA_SERVER_KEY}`,
+    },
+    body: JSON.stringify({
+      query: `
+        mutation ($netlifyID: ID! $email: String!) {
+          createUser(data: {netlifyID: $netlifyID, email: $email}) {
+            netlifyID
+            email
+          }
+        }
+      `,
+      variables: {
+        netlifyID,
+        email,
+      },
+    }),
+  })
+    .then((res) => res.json())
+    .catch((err) => console.error(JSON.stringify(err, null, 2)));
+
+  console.log(JSON.stringify(response, null, 2));
+
+  return {
+    statusCode: 200,
+    // body: JSON.stringify({ app_metadata: { roles: ["user"] } }), // Optional metadata args; see docs
+  };
+};
+```
+Don't forget to commit and push!!!
+
+Now run through a test user signup. If all goes well, you should see a new entry in your FaunaDB containing that user's email and netlifyID!
