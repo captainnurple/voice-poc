@@ -74,7 +74,7 @@ export default {
   },
   computed: {
     ...mapGetters("user", {
-      isLoggedIn: "true",
+      isLoggedIn: "getUserStatus",
       user: "getUser",
     }),
     username() {

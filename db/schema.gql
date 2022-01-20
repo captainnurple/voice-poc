@@ -1,0 +1,4 @@
+type User {
+  netlifyID: ID! # ! means can't return null
+  email: String!
+}

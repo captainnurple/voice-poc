@@ -1,0 +1,8 @@
+# GET http://localhost:8888/.netlify/functions/faunaTest
+
+# GET http://localhost:8888/.netlify/functions/functionsPing
+
+# GET http://localhost:8888/.netlify/functions/echoContext
+
+# GET http://localhost:8888/.netlify/functions/hello
+GET http://localhost:8888/.netlify/functions/uploadTemplateID
