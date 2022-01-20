@@ -248,3 +248,9 @@ Depending on Fauna region you may need to modify endpoint.
 Don't forget to commit and push!!!
 
 Now run through a test user signup. If all goes well, you should see a new entry in your FaunaDB containing that user's email and netlifyID!
+
+Woohoo!!
+
+Next step: uploads.
+
+# File Uploads
