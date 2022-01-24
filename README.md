@@ -269,4 +269,4 @@ See current implementation in voice-v2 for an approach that seems to work and su
 
 Remember: security in depth. Build in security checks/verifications at multiple layers so that even if e.g. a user modifies the logged in state to `true` they still can't see anything valuable on those pages.
 
-**NOTE:** This actually seems to be working now. I think I copied over a bunch of boilerplate code and nav guards already, and it looks like vuex store is being properly set/unset at login. So for now I'm going to move on. Can test more later.
+**NOTE:** This actually seems to be working now. I think I copied over a bunch of boilerplate code and nav guards already, and it looks like vuex store is being properly set/unset at login. So for now I'm going to move on. Can test more later. I think there might be an edge case where the landing page UI is still acting like you're not logged in when you are, but I need to test.
