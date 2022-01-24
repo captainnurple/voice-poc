@@ -251,6 +251,22 @@ Now run through a test user signup. If all goes well, you should see a new entry
 
 Woohoo!!
 
-Next step: uploads.
+Next step: fix landing page login wiring. Set up logged-in dashboard.
 
-# File Uploads
+# Landing Page & Dashboard
+
+This time the Dashboard will be simpler. I can keep the general template for future expansion. But for now the dashboard should be simplified to focus on the file upload interface.
+
+## Landing Page Wiring
+
+Get the right hooks for logged-in/out UI.
+
+### Vuex login bindings
+
+Need to bind to Identity events in all the relevant places. Possibly the best place is in the layout *templates* themselves. Essentially need to check for a persisted logged in cookie (Identity itself checks for this) and if it's there go ahead and load it into vuex. Otherwise need to bind to login event and update all requisite UI elements accordingly. And of course Vue bindings are a core design principle here so it shouldn't be too difficult.
+
+See current implementation in voice-v2 for an approach that seems to work and successfully load logged-in user into vuex store even after page close/refresh (I think I really worked it out pretty well in that).
+
+Remember: security in depth. Build in security checks/verifications at multiple layers so that even if e.g. a user modifies the logged in state to `true` they still can't see anything valuable on those pages.
+
+**NOTE:** This actually seems to be working now. I think I copied over a bunch of boilerplate code and nav guards already, and it looks like vuex store is being properly set/unset at login. So for now I'm going to move on. Can test more later.
