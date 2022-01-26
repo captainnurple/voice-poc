@@ -1,5 +1,6 @@
 // validate call comes from transloadit
 const crypto     = require('crypto');
+const formidable = require('formidable')
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
@@ -23,7 +24,20 @@ exports.handler = async (event, context) => {
   console.log(JSON.stringify(event.body.signature, null, 2));
   console.log(JSON.stringify(event.body.transloadit, null, 2));
   console.log("Checking signature...");
-  console.log(checkSignature(event.body, TRANSLOADIT_AUTH_SECRET));
+
+  const form = new formidable.IncomingForm();
+  form.parse(event.body, (err, fields, files) => {
+    if (err) {
+      return respond(res, 500, [`Error while parsing multipart form`, err])
+    };
+    if (!checkSignature(fields, process.env.AUTH_SECRET)) {
+      return respond(res, 403, [
+        `Error while checking signatures`,
+        `No match so payload was tampered with, or an invalid Auth Secret was used`,
+      ])
+    };
+    console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+  });
   
   console.log(JSON.stringify(event, null, 2));
   console.log(JSON.stringify(context, null, 2));
