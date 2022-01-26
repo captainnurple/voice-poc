@@ -2,8 +2,28 @@
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
+const TRANSLOADIT_AUTH_SECRET = process.env.TRANSLOADIT_AUTH_SECRET;
+
+const checkSignature = (fields, authSecret) => {
+  const receivedSignature = fields.signature
+  const payload           = fields.transloadit
+
+  const calculatedSignature = crypto
+    .createHmac('sha1', authSecret)
+    .update(Buffer.from(payload, 'utf-8'))
+    .digest('hex')
+
+  return calculatedSignature === receivedSignature
+}
+
 exports.handler = async (event, context) => {
 
+  console.log(JSON.stringify(event.body, null, 2));
+  console.log(JSON.stringify(event.body.signature, null, 2));
+  console.log(JSON.stringify(event.body.transloadit, null, 2));
+  console.log("Checking signature...");
+  console.log(checkSignature(event.body, TRANSLOADIT_AUTH_SECRET));
+  
   console.log(JSON.stringify(event, null, 2));
   console.log(JSON.stringify(context, null, 2));
     return {
