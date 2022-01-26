@@ -18,12 +18,12 @@ const routes = [
   },
   {
     path: '/dashboard',
-    name: 'Dashboard',
+    name: 'WriterDashboard',
     meta: {
       layout: "logged_in_layout",
       requiresAuth: true
     },
-    component: () => import(/* webpackChunkName: "dashboard" */ '../views/Dashboard.vue'),
+    component: () => import(/* webpackChunkName: "dashboard" */ '../views/WriterDashboard.vue'),
   },
 ]
 

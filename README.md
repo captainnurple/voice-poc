@@ -270,3 +270,16 @@ See current implementation in voice-v2 for an approach that seems to work and su
 Remember: security in depth. Build in security checks/verifications at multiple layers so that even if e.g. a user modifies the logged in state to `true` they still can't see anything valuable on those pages.
 
 **NOTE:** This actually seems to be working now. I think I copied over a bunch of boilerplate code and nav guards already, and it looks like vuex store is being properly set/unset at login. So for now I'm going to move on. Can test more later. I think there might be an edge case where the landing page UI is still acting like you're not logged in when you are, but I need to test.
+
+## Uppy
+
+Ref: https://uppy.io/docs/vue/
+
+`npm install @uppy/vue`
+`npm install @uppy/robodog`
+
+lollll ok it's working with hideously ugly code
+
+NEED TO REFACTOR WRITER DASHBOARD
+
+I'm fetching the Transloadit keys when the page mounts, then waiting until the fetch calls have both returned before initializing Uppy. It's ugly, strung together code and it's hideous and I'm sure it's wrong in many ways BUT it works.
