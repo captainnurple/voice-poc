@@ -30,6 +30,11 @@ exports.handler = async (event, context) => {
     if (err) {
       return respond(res, 500, [`Error while parsing multipart form`, err])
     };
+    console.log(fields);
+    return {
+      statusCode: 200,
+    };
+
     if (!checkSignature(fields, process.env.AUTH_SECRET)) {
       return respond(res, 403, [
         `Error while checking signatures`,
