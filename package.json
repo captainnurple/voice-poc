@@ -10,6 +10,7 @@
     "@uppy/robodog": "^2.2.1",
     "@uppy/vue": "^0.4.5",
     "core-js": "^3.6.5",
+    "formidable": "^2.0.1",
     "netlify-cli": "^8.8.2",
     "netlify-identity-widget": "^1.9.2",
     "node-fetch": "^2.6.2",
