@@ -1,6 +1,6 @@
 // validate call comes from transloadit
 const crypto     = require('crypto');
-const formidable = require('formidable')
+// const formidable = require('formidable')
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
@@ -20,24 +20,51 @@ const checkSignature = (fields, authSecret) => {
 
 exports.handler = async (event, context) => {
 
-  console.log("Non-Stringified");
-  console.log(event.body);
-  console.log(decodeURIComponent(event.body));
+  const transloaditPayload = event.body;
+  const fields = querystring.parse(transloaditPayload);
+
+  // console.log("Non-Stringified");
+  // console.log(event.body);
+  // console.log(decodeURIComponent(event.body));
   // console.log(JSON.parse(decodeURIComponent(event.body)));
   // console.log("Stringified");
   // console.log(JSON.stringify(event.body.signature, null, 2));
   // console.log(JSON.stringify(event.body.transloadit, null, 2));
   // console.log("Checking signature...");
 
-  const form = new formidable.IncomingForm();
-  form.parse(event.body, (err, fields, files) => {
-    if (err) {
-      return respond(res, 500, [`Error while parsing multipart form`, err])
-    };
-    console.log(fields);
+  try {
+    console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
+    console.log(fields.signature);
+    console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+  }
+  catch (err) {
+    console.log("error caught");
+    console.log(err);
     return {
-      statusCode: 200,
-    };
+      statusCode : 200,
+    }
+  }
+
+  if (!checkSignature(fields, TRANSLOADIT_AUTH_SECRET)) {
+    return respond(res, 403, [
+      `Error while checking signatures`,
+      `No match so payload was tampered with, or an invalid Auth Secret was used`,
+    ])
+  };
+
+  return {
+    statusCode: 200,
+  }
+
+  // const form = new formidable.IncomingForm();
+  // form.parse(event.body, (err, fields, files) => {
+  //   if (err) {
+  //     return respond(res, 500, [`Error while parsing multipart form`, err])
+  //   };
+  //   console.log(fields);
+  //   return {
+  //     statusCode: 200,
+  //   };
 
     // if (!checkSignature(fields, process.env.AUTH_SECRET)) {
     //   return respond(res, 403, [
@@ -46,13 +73,13 @@ exports.handler = async (event, context) => {
     //   ])
     // };
     // console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
-  });
+  // });
   
   // console.log(JSON.stringify(event, null, 2));
   // console.log(JSON.stringify(context, null, 2));
-    return {
-      statusCode: 200,
-    }
+    // return {
+    //   statusCode: 200,
+    // }
 
   // if (context?.clientContext?.user) { // Verifies logged-in user
   //   // process the function
