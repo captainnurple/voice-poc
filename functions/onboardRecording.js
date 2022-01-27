@@ -1,6 +1,6 @@
 // validate call comes from transloadit
 const crypto     = require('crypto');
-// const formidable = require('formidable')
+const formidable = require('formidable')
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
