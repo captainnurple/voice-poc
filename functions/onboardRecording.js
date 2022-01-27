@@ -21,7 +21,9 @@ const checkSignature = (fields, authSecret) => {
 exports.handler = async (event, context) => {
 
   console.log("Non-Stringified");
-  console.log(event.body, null, 2);
+  console.log(event.body);
+  console.log(decodeURIComponent(event.body));
+  console.log(JSON.parse(decodeURIComponent(event.body)));
   console.log("Stringified");
   console.log(JSON.stringify(event.body.signature, null, 2));
   console.log(JSON.stringify(event.body.transloadit, null, 2));
