@@ -20,32 +20,34 @@ const checkSignature = (fields, authSecret) => {
 
 exports.handler = async (event, context) => {
 
-  console.log(JSON.stringify(event.body, null, 2));
+  console.log("Non-Stringified");
+  console.log(event.body, null, 2);
+  console.log("Stringified");
   console.log(JSON.stringify(event.body.signature, null, 2));
   console.log(JSON.stringify(event.body.transloadit, null, 2));
-  console.log("Checking signature...");
+  // console.log("Checking signature...");
 
-  const form = new formidable.IncomingForm();
-  form.parse(event.body, (err, fields, files) => {
-    if (err) {
-      return respond(res, 500, [`Error while parsing multipart form`, err])
-    };
-    console.log(fields);
-    return {
-      statusCode: 200,
-    };
+  // const form = new formidable.IncomingForm();
+  // form.parse(event.body, (err, fields, files) => {
+  //   if (err) {
+  //     return respond(res, 500, [`Error while parsing multipart form`, err])
+  //   };
+  //   console.log(fields);
+  //   return {
+  //     statusCode: 200,
+  //   };
 
-    if (!checkSignature(fields, process.env.AUTH_SECRET)) {
-      return respond(res, 403, [
-        `Error while checking signatures`,
-        `No match so payload was tampered with, or an invalid Auth Secret was used`,
-      ])
-    };
-    console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
-  });
+  //   if (!checkSignature(fields, process.env.AUTH_SECRET)) {
+  //     return respond(res, 403, [
+  //       `Error while checking signatures`,
+  //       `No match so payload was tampered with, or an invalid Auth Secret was used`,
+  //     ])
+  //   };
+  //   console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+  // });
   
-  console.log(JSON.stringify(event, null, 2));
-  console.log(JSON.stringify(context, null, 2));
+  // console.log(JSON.stringify(event, null, 2));
+  // console.log(JSON.stringify(context, null, 2));
     return {
       statusCode: 200,
     }
