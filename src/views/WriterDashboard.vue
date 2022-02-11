@@ -125,13 +125,24 @@ export default {
         inline: true,
         waitForEncoding: true,
         height: 200,
-        params: {
-          // To avoid tampering, use Signature Authentication
-          auth: { key: `${UPLOAD_KEYS.TRANSLOADIT_KEY}` },
-          template_id: `${UPLOAD_KEYS.TRANSLOADIT_TEMPLATE_ID}`,
-          // auth: { key: "58780b415f124c0f99f6da702e762ad7" },
-          // template_id: "12cb3d91ded94271a7345c43b4784972",
+        getAssemblyOptions(file) {
+          return {
+            params: {
+              auth: { key: `${UPLOAD_KEYS.TRANSLOADIT_KEY}` },
+              template_id: `${UPLOAD_KEYS.TRANSLOADIT_TEMPLATE_ID}`,
+            },
+            fields: {
+              netlifyUserToken: file.meta.netlifyUserToken,
+            },
+          };
         },
+        // params: {
+        //   // To avoid tampering, use Signature Authentication
+        //   auth: { key: `${UPLOAD_KEYS.TRANSLOADIT_KEY}` },
+        //   template_id: `${UPLOAD_KEYS.TRANSLOADIT_TEMPLATE_ID}`,
+        //   // auth: { key: "58780b415f124c0f99f6da702e762ad7" },
+        //   // template_id: "12cb3d91ded94271a7345c43b4784972",
+        // }
       });
       uppy.on("upload-success", (file, resp) => {
         console.log("upload-success");
@@ -142,7 +153,11 @@ export default {
         console.log("complete");
         console.log(JSON.stringify(result, null, 2));
       });
-      uppy.on;
+      uppy.on("file-added", (file) => {
+        uppy.setFileMeta(file.id, {
+          netlifyUserToken: this.getUser.access_token,
+        });
+      });
     },
   },
 };

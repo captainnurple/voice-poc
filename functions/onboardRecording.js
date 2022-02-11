@@ -1,6 +1,7 @@
 // validate call comes from transloadit
 const crypto     = require('crypto');
 const querystring = require('querystring');
+const jwt_decode = require('jwt-decode');
 
 // const formidable = require('formidable')
 
@@ -36,6 +37,7 @@ exports.handler = async (event, context) => {
 
   try {
     console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
+    console.log(fields.transloadit.fields.netlifyUserToken);
     console.log(fields.signature);
     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
   }
