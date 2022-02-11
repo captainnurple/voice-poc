@@ -1,12 +1,9 @@
 // validate call comes from transloadit
 const crypto     = require('crypto');
 const querystring = require('querystring');
-
-// const formidable = require('formidable')
+const TRANSLOADIT_AUTH_SECRET = process.env.TRANSLOADIT_AUTH_SECRET;
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
-
-const TRANSLOADIT_AUTH_SECRET = process.env.TRANSLOADIT_AUTH_SECRET;
 
 const checkSignature = (fields, authSecret) => {
   const receivedSignature = fields.signature
@@ -20,43 +17,89 @@ const checkSignature = (fields, authSecret) => {
   return calculatedSignature === receivedSignature
 }
 
+// Fields to explicitly persist
+// netlifyID (index)
+// aws url of original upload
+// aws url of transcoded audio
+// name (default to filename)
+// date created
+// metadata object (duration, bitrate, etc)
+// stringified request from transloadit
+
+
 exports.handler = async (event, context) => {
 
+  // DEBUG
+  console.log(event.body);
   const transloaditPayload = event.body;
   const fields = querystring.parse(transloaditPayload);
-
-  // console.log("Non-Stringified");
-  // console.log(event.body);
-  // console.log(decodeURIComponent(event.body));
-  // console.log(JSON.parse(decodeURIComponent(event.body)));
-  // console.log("Stringified");
-  // console.log(JSON.stringify(event.body.signature, null, 2));
-  // console.log(JSON.stringify(event.body.transloadit, null, 2));
-  // console.log("Checking signature...");
-
-  try {
-    console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
-    console.log(fields.signature);
-    console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
-  }
-  catch (err) {
-    console.log("error caught");
-    console.log(err);
-    return {
-      statusCode : 200,
-    }
-  }
-
-  if (!checkSignature(fields, TRANSLOADIT_AUTH_SECRET)) {
-    return respond(res, 403, [
-      `Error while checking signatures`,
-      `No match so payload was tampered with, or an invalid Auth Secret was used`,
-    ])
-  };
+  console.log("BREAK BREAK BREAK");
+  console.log(JSON.stringify(JSON.parse(fields), null, 2));
 
   return {
-    statusCode: 200,
+    statusCode : 200,
   }
+  // END DEBUG
+
+//   const { user } = JSON.parse(event.body);
+//   // console.log("New user signup:")
+//   console.log(JSON.stringify(user, null, 2));
+
+//   const netlifyID = user.id;
+
+//   const transloaditPayload = event.body;
+//   const fields = querystring.parse(transloaditPayload);
+
+//   // console.log("Non-Stringified");
+//   // console.log(event.body);
+//   // console.log(decodeURIComponent(event.body));
+//   // console.log(JSON.parse(decodeURIComponent(event.body)));
+//   // console.log("Stringified");
+//   // console.log(JSON.stringify(event.body.signature, null, 2));
+//   // console.log(JSON.stringify(event.body.transloadit, null, 2));
+//   // console.log("Checking signature...");
+
+//   try {
+//     console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
+//     console.log(fields.signature);
+//     console.log(fields.transloadit);
+//     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+
+//     const netlify_id = netlifyID;
+// /*    
+//     const recording_name;
+//     const created_date;
+//     const transcoded_url;
+//     const original_url;
+//     const meta;
+//     const original_request;
+// */
+//     // aws url of original upload
+//     // aws url of transcoded audio
+//     // name (default to filename)
+//     // date created
+//     // metadata object (duration, bitrate, etc)
+//     // stringified request from transloadit    
+//     // console.log(`netlify_id: ${netlify_id}`)
+  // }
+  // catch (err) {
+  //   console.log("error caught");
+  //   console.log(err);
+  //   return {
+  //     statusCode : 200,
+  //   }
+  // }
+
+  // if (!checkSignature(fields, TRANSLOADIT_AUTH_SECRET)) {
+  //   return respond(res, 403, [
+  //     `Error while checking signatures`,
+  //     `No match so payload was tampered with, or an invalid Auth Secret was used`,
+  //   ])
+  // };
+
+  // return {
+  //   statusCode: 200,
+  // }
 
   // const form = new formidable.IncomingForm();
   // form.parse(event.body, (err, fields, files) => {
