@@ -54,12 +54,14 @@ exports.handler = async (event, context) => {
     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
 
     const netlify_id = netlifyID;
+/*    
     const recording_name;
     const created_date;
     const transcoded_url;
     const original_url;
     const meta;
     const original_request;
+*/
     // aws url of original upload
     // aws url of transcoded audio
     // name (default to filename)
