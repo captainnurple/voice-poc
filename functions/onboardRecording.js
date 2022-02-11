@@ -42,6 +42,9 @@ exports.handler = async (event, context) => {
     console.log(tl.fields.netlifyUserToken);
     console.log(fields.signature);
     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+
+    var decoded = jwt_decode(tl.fields.netlifyUserToken);
+    console.log(decoded);
   }
   catch (err) {
     console.log("error caught");
