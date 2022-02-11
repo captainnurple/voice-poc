@@ -40,7 +40,6 @@ exports.handler = async (event, context) => {
     console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
     console.log(tl.fields);
     console.log(tl.fields.netlifyUserToken);
-    console.log(fields.transloadit.fields.netlifyUserToken);
     console.log(fields.signature);
     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
   }
