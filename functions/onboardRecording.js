@@ -31,6 +31,11 @@ exports.handler = async (event, context) => {
 
   // DEBUG
   console.log(event.body);
+  const transloaditPayload = event.body;
+  const fields = querystring.parse(transloaditPayload);
+  console.log("BREAK BREAK BREAK");
+  console.log(JSON.stringify(JSON.parse(fields), null, 2));
+
   return {
     statusCode : 200,
   }
