@@ -29,6 +29,13 @@ const checkSignature = (fields, authSecret) => {
 
 exports.handler = async (event, context) => {
 
+  // DEBUG
+  console.log(event.body);
+  return {
+    statusCode : 200,
+  }
+  // END DEBUG
+
   const { user } = JSON.parse(event.body);
   // console.log("New user signup:")
   console.log(JSON.stringify(user, null, 2));
