@@ -41,65 +41,65 @@ exports.handler = async (event, context) => {
   }
   // END DEBUG
 
-  const { user } = JSON.parse(event.body);
-  // console.log("New user signup:")
-  console.log(JSON.stringify(user, null, 2));
+//   const { user } = JSON.parse(event.body);
+//   // console.log("New user signup:")
+//   console.log(JSON.stringify(user, null, 2));
 
-  const netlifyID = user.id;
+//   const netlifyID = user.id;
 
-  const transloaditPayload = event.body;
-  const fields = querystring.parse(transloaditPayload);
+//   const transloaditPayload = event.body;
+//   const fields = querystring.parse(transloaditPayload);
 
-  // console.log("Non-Stringified");
-  // console.log(event.body);
-  // console.log(decodeURIComponent(event.body));
-  // console.log(JSON.parse(decodeURIComponent(event.body)));
-  // console.log("Stringified");
-  // console.log(JSON.stringify(event.body.signature, null, 2));
-  // console.log(JSON.stringify(event.body.transloadit, null, 2));
-  // console.log("Checking signature...");
+//   // console.log("Non-Stringified");
+//   // console.log(event.body);
+//   // console.log(decodeURIComponent(event.body));
+//   // console.log(JSON.parse(decodeURIComponent(event.body)));
+//   // console.log("Stringified");
+//   // console.log(JSON.stringify(event.body.signature, null, 2));
+//   // console.log(JSON.stringify(event.body.transloadit, null, 2));
+//   // console.log("Checking signature...");
 
-  try {
-    console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
-    console.log(fields.signature);
-    console.log(fields.transloadit);
-    console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
+//   try {
+//     console.log(JSON.stringify(JSON.parse(fields.transloadit), null, 2));
+//     console.log(fields.signature);
+//     console.log(fields.transloadit);
+//     console.log(checkSignature(fields, TRANSLOADIT_AUTH_SECRET));
 
-    const netlify_id = netlifyID;
-/*    
-    const recording_name;
-    const created_date;
-    const transcoded_url;
-    const original_url;
-    const meta;
-    const original_request;
-*/
-    // aws url of original upload
-    // aws url of transcoded audio
-    // name (default to filename)
-    // date created
-    // metadata object (duration, bitrate, etc)
-    // stringified request from transloadit    
-    console.log(`netlify_id: ${netlify_id}`)
-  }
-  catch (err) {
-    console.log("error caught");
-    console.log(err);
-    return {
-      statusCode : 200,
-    }
-  }
+//     const netlify_id = netlifyID;
+// /*    
+//     const recording_name;
+//     const created_date;
+//     const transcoded_url;
+//     const original_url;
+//     const meta;
+//     const original_request;
+// */
+//     // aws url of original upload
+//     // aws url of transcoded audio
+//     // name (default to filename)
+//     // date created
+//     // metadata object (duration, bitrate, etc)
+//     // stringified request from transloadit    
+//     // console.log(`netlify_id: ${netlify_id}`)
+  // }
+  // catch (err) {
+  //   console.log("error caught");
+  //   console.log(err);
+  //   return {
+  //     statusCode : 200,
+  //   }
+  // }
 
-  if (!checkSignature(fields, TRANSLOADIT_AUTH_SECRET)) {
-    return respond(res, 403, [
-      `Error while checking signatures`,
-      `No match so payload was tampered with, or an invalid Auth Secret was used`,
-    ])
-  };
+  // if (!checkSignature(fields, TRANSLOADIT_AUTH_SECRET)) {
+  //   return respond(res, 403, [
+  //     `Error while checking signatures`,
+  //     `No match so payload was tampered with, or an invalid Auth Secret was used`,
+  //   ])
+  // };
 
-  return {
-    statusCode: 200,
-  }
+  // return {
+  //   statusCode: 200,
+  // }
 
   // const form = new formidable.IncomingForm();
   // form.parse(event.body, (err, fields, files) => {
