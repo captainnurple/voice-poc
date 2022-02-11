@@ -283,3 +283,27 @@ lollll ok it's working with hideously ugly code
 NEED TO REFACTOR WRITER DASHBOARD
 
 I'm fetching the Transloadit keys when the page mounts, then waiting until the fetch calls have both returned before initializing Uppy. It's ugly, strung together code and it's hideous and I'm sure it's wrong in many ways BUT it works.
+
+# INSERT UPDATES 1/27
+
+between the above and now, I did a bunch of work getting Uppy working AND pinging my back-end when a transcoding is completed.
+
+See commits around `b0d3082..64d942a  master -> master`
+
+# END INSERT 1/27
+
+# Fauna Schema
+
+Updating schema for recordings as follows:
+
+```
+type User {
+  netlifyID: ID! # ! means can't return null
+  email: String!
+  recordings: [Recording] @relation # A user can be (optionally) associated with many recordings
+}
+
+type Recording {
+  owner: User! # A recording can (and must) only be associated with a single user
+}
+```
