@@ -1,12 +1,21 @@
 type User {
   netlifyID: ID! # ! means can't return null
   email: String!
-  recordings: [Recording] @relation # A user can be (optionally) associated with many recordings
+  name: String
+  recordings: [Recording!] @relation
 }
 
 type Recording {
-  date: Timestamp!
-  name: String!
-  awsUrl: String!
-  owner: User! # A recording can (and must) only be associated with a single user
+  title: String
+  date: Time
+  original: RecordingURL! @relation
+  transcoded: RecordingURL @relation
+  low_fi: RecordingURL
+  transloadit: String # Archive of transloadit payload
+  user: User!
+}
+
+type RecordingURL {
+  url: String!
+  ssl_url: String
 }

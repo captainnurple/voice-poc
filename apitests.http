@@ -5,4 +5,27 @@
 # GET http://localhost:8888/.netlify/functions/echoContext
 
 # GET http://localhost:8888/.netlify/functions/hello
-GET http://localhost:8888/.netlify/functions/uploadTemplateID
+# GET http://localhost:8888/.netlify/functions/initializeTranscriptionAWS
+
+
+# GET https://322a-174-248-207-172.ngrok.io/.netlify/functions/hello
+
+# POST http://322a-174-248-207-172.ngrok.io/.netlify/functions/completedTranscriptionCallback
+
+POST http://e400-76-170-96-113.ngrok.io/.netlify/functions/fetchUserRecordings HTTP/1.1
+content-type: application/json
+
+{
+    "event": {
+      "body" : {
+        "after" : []
+      }
+    },
+    "context" : {
+      "clientContext" : {
+        "user" : {
+          "id" : "cb27daef-4bfc-4f69-9d44-113e4605bad2"
+        }
+      }
+    }
+}

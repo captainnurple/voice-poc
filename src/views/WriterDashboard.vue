@@ -18,54 +18,13 @@
     <div>
       <v-sheet outlined elevation="1" class="pa-2">
         <h1>Recent Uploads</h1>
-        <v-card outlined class="mb-2">
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">Jan 23, 2022 Recording</div>
-              <v-list-item-title class="text-h5 mb-1">
-                Ethan Escape Scene
-              </v-list-item-title>
-              <v-list-item-subtitle
-                >Ethan dove behind the bollard just as the car slammed into it.
-                The vehicle cartwheeled over his head shedding bent metal,
-                sparks, and fuel. He unloaded the rest of his clip at the
-                driver's side window as it twisted into view, but Franklin
-                jerked down out of the way just in time...</v-list-item-subtitle
-              >
-            </v-list-item-content>
-          </v-list-item>
 
-          <v-card-actions>
-            <v-btn icon x-large elevation="2">
-              <v-icon>mdi-play</v-icon>
-            </v-btn>
-            <v-progress-linear></v-progress-linear>
-          </v-card-actions>
-        </v-card>
-        <v-card outlined class="mb-2">
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">Jan 22, 2022 Recording</div>
-              <v-list-item-title class="text-h5 mb-1">
-                Ethan Ambush Scene
-              </v-list-item-title>
-              <v-list-item-subtitle
-                >Ethan dove behind the bollard just as the car slammed into it.
-                The vehicle cartwheeled over his head shedding bent metal,
-                sparks, and fuel. He unloaded the rest of his clip at the
-                driver's side window as it twisted into view, but Franklin
-                jerked down out of the way just in time...</v-list-item-subtitle
-              >
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-card-actions>
-            <v-btn icon x-large elevation="2">
-              <v-icon>mdi-play</v-icon>
-            </v-btn>
-            <v-progress-linear></v-progress-linear>
-          </v-card-actions>
-        </v-card>
+        <recording
+          v-for="recording in recordings"
+          v-bind:key="recording.id"
+          v-bind:recDate="recording.recDate"
+          v-bind:recTitle="recording.recTitle"
+        />
       </v-sheet>
     </div>
   </div>
@@ -74,11 +33,18 @@
 <script>
 import Robodog from "@uppy/robodog";
 import { mapGetters } from "vuex";
+import jwt_decode from "jwt-decode";
+import Recording from "../components/Recording.vue";
 
 require("@uppy/core/dist/style.css");
 require("@uppy/dashboard/dist/style.css");
 
 var UPLOAD_KEYS = {};
+
+const notifyURL =
+  process.env.NODE_ENV == "development"
+    ? "http://b1cb-204-128-192-33.ngrok.io"
+    : "https://boring-varahamihira-cc7a90.netlify.app";
 
 // const TRANSLOADIT_KEY = process.env.TRANSLOADIT_KEY;
 // const TRANSLOADIT_TEMPLATE_ID = process.env.TRANSLOADIT_TEMPLATE_ID;
@@ -86,7 +52,16 @@ var UPLOAD_KEYS = {};
 
 export default {
   name: "WriterDashboard",
-  components: {},
+  data: () => ({
+    // recordings: {
+    //   recDate: null,
+    //   recTitle: null,
+    // },
+    recordings: [],
+  }),
+  components: {
+    Recording,
+  },
   computed: {
     ...mapGetters("user", ["getUser"]),
   },
@@ -95,6 +70,17 @@ export default {
   },
   mounted: function mounted() {
     console.log("mounted");
+    console.log(this.getUser.access_token);
+    const decoded = jwt_decode(this.getUser.access_token);
+    console.log(decoded);
+    console.log(decoded.sub);
+    console.log(jwt_decode(this.getUser.access_token).sub);
+    // this.fetchRecordings(this.recordings);
+    // this.recordings.push({
+    //   key: 2,
+    //   recDate: "March 2, 2022",
+    //   keyTitle: "Ethan Arrives",
+    // });
   },
   watch: {},
   methods: {
@@ -130,9 +116,12 @@ export default {
             params: {
               auth: { key: `${UPLOAD_KEYS.TRANSLOADIT_KEY}` },
               template_id: `${UPLOAD_KEYS.TRANSLOADIT_TEMPLATE_ID}`,
+              notify_url: `${notifyURL}/.netlify/functions/onboardRecording`,
             },
             fields: {
               netlifyUserToken: file.meta.netlifyUserToken,
+              netlifyID: file.meta.netlifyID,
+              filePrefix: file.meta.filePrefix,
             },
           };
         },
@@ -146,18 +135,92 @@ export default {
       });
       uppy.on("upload-success", (file, resp) => {
         console.log("upload-success");
-        console.log(JSON.stringify(file, null, 2));
-        console.log(JSON.stringify(resp, null, 2));
+        // console.log(JSON.stringify(file, null, 2));
+        // console.log(JSON.stringify(resp, null, 2));
       });
       uppy.on("complete", (result) => {
         console.log("complete");
-        console.log(JSON.stringify(result, null, 2));
+        // console.log(JSON.stringify(result, null, 2));
+        // Format data for display
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        const today = new Date();
+        const dateStr = today.toLocaleDateString("en-US", options);
+        // const resObj = JSON.parse(result);
+        const uploadedFileName = result.transloadit[0].uploads[0].name;
+
+        console.log(`Recording date : ${dateStr}`);
+        console.log(`Recording Title : ${uploadedFileName}`);
       });
       uppy.on("file-added", (file) => {
+        console.log("File added");
+        const niid = jwt_decode(this.getUser.access_token).sub;
+        const timeStamp = Date.now();
+        const prefix = `${niid.replaceAll("-", "_")}__${timeStamp}`;
+        console.log(`filePrefix: ${prefix}`);
         uppy.setFileMeta(file.id, {
           netlifyUserToken: this.getUser.access_token,
+          netlifyID: niid,
+          filePrefix: prefix,
         });
       });
+    },
+    fetchRecordings(recordings) {
+      fetch("/.netlify/functions/fetchUserRecordings", {
+        headers: {
+          Authorization: "Bearer " + this.getUser.access_token,
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw response.statusText;
+          }
+        })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      // fetch("/.netlify/functions/uploadKeyAndID/", {
+      //   headers: {
+      //     Authorization: "Bearer " + this.getUser.access_token,
+      //   },
+      // })
+      //   .then((response) => {
+      //     if (response.ok) {
+      //       return response.json();
+      //     } else {
+      //       throw response.statusText;
+      //     }
+      //   })
+      //   .then((data) => {
+      //     UPLOAD_KEYS = data;
+      //     console.log(UPLOAD_KEYS);
+      //     this.initUppy();
+      //   })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
+      const recs = [
+        {
+          id: 3,
+          recDate: "March 3, 2022",
+          recTitle: "Ethan Runs Away",
+        },
+        {
+          id: 2,
+          recDate: "March 2, 2022",
+          recTitle: "Ethan Arrives",
+        },
+        {
+          id: 1,
+          recDate: "March 1, 2022",
+          recTitle: "Ethan Sleeps",
+        },
+      ];
+      recs.forEach((item) => recordings.push(item));
     },
   },
 };

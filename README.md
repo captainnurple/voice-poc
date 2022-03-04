@@ -298,12 +298,226 @@ Updating schema for recordings as follows:
 
 ```
 type User {
-  netlifyID: ID! # ! means can't return null
-  email: String!
-  recordings: [Recording] @relation # A user can be (optionally) associated with many recordings
+  name: String!
+  recordings: [Recording!] @relation
 }
 
 type Recording {
-  owner: User! # A recording can (and must) only be associated with a single user
+  title: String
+  date: Time
+  original: RecordingURL!
+  transcoded: RecordingURL
+  low_fi: RecordingURL
+  transloadit: String
+  user: User!
+}
+
+type RecordingURL {
+  url: String!
+  ssl_url: String
 }
 ```
+
+## Note on sharing code between functions
+
+See https://stackoverflow.com/questions/60164698/how-to-share-code-between-netlify-lambda-functions/68370583#68370583
+
+That's what I'll try. (It appears to work.)
+
+# ngrok for Transloadit callback testings
+
+created ngrok account malcolm.murdock@gmail.com
+Downloaded ngrok to vue-learning directory
+Connect my account
+`../ngrok authtoken 25763lYQm6bC1vzgwDPxtyUN82S_6ABNZudCw837NvmJz5ZWT`
+
+start a tunnel for forwarding callbacks (in this case `netlify dev` has functions on 8888)
+
+`../ngrok http 8888`
+
+Test with the listed url. In this case 
+
+http://5aba-76-170-96-113.ngrok.io
+
+So using REST Client plugin test e.g. via 
+
+GET http://5aba-76-170-96-113.ngrok.io/.netlify/functions/hello
+
+It works!!
+
+Now I can use ngrok endpoints for local dev/testing of e.g. Transloadit callback URLs which should save SO MUCH TIME.
+
+**Okay this is sick...**
+
+Within a vue file I can now check whether I'm in a local dev environment or not, and based on that I can change the notify_url that Transloadit uses when the assembly is done.
+
+**TODO CHANGE THESE TO ENV VARS OR SOMETHING (at least your website URL should be ENV var and not in git)**
+
+```
+const notifyURL =
+  process.env.NODE_ENV == "development"
+    ? "http://5ca2-76-170-96-113.ngrok.io"
+    : "https://boring-varahamihira-cc7a90.netlify.app";
+```
+
+Then, in the transloadit call:
+
+```
+...
+    return {
+      params: {
+        auth: { key: `${UPLOAD_KEYS.TRANSLOADIT_KEY}` },
+        template_id: `${UPLOAD_KEYS.TRANSLOADIT_TEMPLATE_ID}`,
+        notify_url: `${notifyURL}/.netlify/functions/onboardRecording`,
+      },
+...
+```
+
+One shortcoming of this is the ngrok URL constantly changes, so an improvement would be to make that more dynamic/automatic.
+
+# Revisiting Fauna
+
+At this stage I've updated my Fauna schema. A few notes at this point:
+
+TODO: Figure out how to enforce a uniqueness constraint on necessary fields. What if two users have the same email? What am I indexing against? I should ultimately index against netlifyID and enforce that as a unique key.
+
+Also, document retrieval is done via Index in Fauna. 
+
+**Okay** I've done a lot of fauna work the past few days. here's where we're at: I think I've finally started to grok fauna commands and FQL. I'm now going to try to get the fauna javascript driver up and running and see if I can hit a UDF successfully.
+
+to start with I'll create a temp server key on fauna, then install the javascript driver
+
+`npm install faunadb`
+
+The following code works! (you can test in a separate js file by running `node faunaTest.js`)
+
+```
+var faunadb = require('faunadb')
+var q = faunadb.query
+
+const TEMP_SERVER_KEY = 'fnAEfu2CM1AARr_nE73_Hr-qZ-DdizaK98slAhgg'
+
+var client = new faunadb.Client({
+  secret: TEMP_SERVER_KEY,
+  domain: 'db.us.fauna.com'
+})
+
+client.query(
+  q.ToDate('2018-06-06')
+)
+.then(function (res) { console.log('Result:', res) })
+.catch(function (err) { console.log('Error:', err) })
+
+
+console.log(TEMP_SERVER_KEY)
+```
+
+
+# AWS Transcription Pipeline!!
+
+Following this: https://towardsdatascience.com/speech-to-text-using-aws-transcribe-s3-and-lambda-a6e88fb3a48e
+
+![Overall Architecture](https://miro.medium.com/max/1400/1*W--tlEcK4fpV2plXQqfQ2A.png)
+
+Yup it works. An audio file uploaded to wv-transcribe-upload is now transcribed into wv-transcribe-output.
+
+# API Gateway
+
+Need: A function I can hit from Netlify with the file info of a file to be transcribed. From there handle it all internal to aws and only hit Netlify function as final API alert of finished transcription.
+
+API Gateway: wv-initialize-transcribe-endpoint invokes wv-initialize-transcribe Lambda function
+
+### Hacky security
+
+check for auth_key header as defined in the lambda function code
+
+#### Set env variable in Netlify
+set API_GATE_TRANSCRIBE_KEY in Netlify to the value at the top of `wv-initialize-transcribe` Lambda function
+I also set `API_GATE_INIT_TRANSCRIBE_ENDPOINT` to the url of the gateway endpoint to pull it out of sourcecode
+
+Anyway, passing the request with `auth_key` successfully receives response from the Lambda function!! (And unauthorized response w/o header so that's good.)
+
+So I can now invoke `initializeTranscriptionAWS` to fire off a request into my AWS lambda workflow!
+
+Next steps: 
+- call `initializeTranscriptionAWS` at the end of `onboardRecording` to fire off the transcription request! 
+- make the callback endpoint for when transcription is completed
+
+## TODO
+SO MANY MESSY PERMISSIONS
+Basically need to redo this whole workflow from scratch now that I have a slightly better understanding of Roles and Policies. Or at least start simplifying; eliminating policies one at a time to figure out which ones I really need for the workflow and consolidating into more rational roles and policies.
+
+# Workflow
+
+Functions receives new upload alert from Transloadit.
+
+Persist received data to FaunaDB. Then invoke...
+
+Enqueue Transcription (separating this out also allows to not automatically transcribe every uploaded file)
+  * Add job to queue tracker in FaunaDB
+  * Init transcription on AWS
+  * AWS when finished hits completion function
+  * completion function verifies job; persists JSON; then removes from queue
+
+Post-Process
+  * JSON to natural text
+  * Any special post-processing
+
+
+# In No Particular Order
+
+(need to go through commits to comprehensivey document)
+
+in WriterDashboard.vue, I'm now constructing a file prefix prior to upload where I take the netlify uid, replace - with _, then add a timestamp (separated by __). This will serve as the bucket/upload prefix for now. It will make my buckets fully "flat" with no folder organization but scale later. Done is better than perfect.
+
+Now going to work through function flow to track file name evolution. Ideally it'll all stay the same/consistent...
+
+Okay `onboardRecording.js` receives the callback from Transloadit and appears to have the proper s3 upload structure. This then persists into faunaDB and calls `initializeTranscriptionAWS.js`, which extracts the s3 "key" from the filename (properly, it appears).
+
+**Modification** In `onboardRecording` I'm now (hackily) extracting the returned object ID to pass along to aws. We'll need this later to find the right fauna record. This is super hacky, I need to figure out the right way to return a desired value with a record...
+**NEVER MIND** I now have a faunadb UDF that will fetch a Recording object based on original ssl_url
+  `fetch_recording_by_original_recordingUrl_ssl_url`
+
+Lambda aws is successfully returning from here. Which is good news. Let's head over to the actual lambda functions now...
+
+from `initializeTranscriptionAWS.js` we hit (in Lambda) `wv-initialize-transcribe` which (should) copy the uploaded file over to the `wv-transcribe-upload` bucket.
+
+The bucket should then trigger `lambda-transcribe` upon new object creation.
+
+I've now modified `jobName` in `lambda-transcribe` to no longer add a uuid, under the assumption that with my timestamp the filenames are sufficiently unique (MAYBE FIX THIS LATER).
+
+`lambda-transcribe` then fires off a transcription job with "wv-transcribe-output" as the output bucket and returns some job info to (somewhere???)
+
+Now, two separate functions SHOULD be watching for completion of the transcription job...
+
+`wv-transcribe-cleanup` should delete the file copied over during `wv-initialize-transcribe`, with the filename simply the transcription job name now.
+
+`wv-transcribe-cleanup` should... DO WHAT?
+
+omg it's working
+
+# NEXT: 
+
+- attach a listener to the post-processed bucket that consolidates results into one location and fires back to `completedTranscriptionCallback`
+  - done lol
+  - generated a NETLIFY_CALLBACK_KEY and pasted it into the lambda and stored in netlify env vars
+  - lol nm apparently iz complicated calling external API from lambda (ironically since Netlify is inside aws ha). Got it working with nodjs code in `wv-post-completed-listener` in Lambda
+- In `completedTranscriptionCallback` persist whatever I need to: reference to the json file (or the json itself); and of course the post-processed transcription
+- Figure out how to "watch" for completion: something indexed in fauna so I'm not hitting the db repeatedly. maybe just an indexed queue?
+  - Event stream!
+- Once completed, update the front-end!
+
+# Recording Component
+
+Recording.vue
+
+**FOR NOW:** Implement the waiting for transcription as a polling operation to the netlify backend. Fauna event stream is a way better way to do this BUT I've already implemented client auth on the netlify API side, and polling Fauna from the frontend adds an entirely new authentication requirement for Fauna tokens, user auth, expiry time etc.
+
+`fetchUserRecordings.js`
+
+
+# TO DO
+
+catch up on documentation
+
+2/11 I got uppy successfully sending netlifyID and JWT to transloadit and then passing that along to the pingback URL, where I can now decode it successfully in the netlify function. This is huge! I now can use this userID to associate the recording with the proper user!

@@ -3,6 +3,7 @@ module.exports = {
     'vuetify'
   ],
   devServer: { // suppresses the massive webpack.Progress terminal spam when running dev server
-    progress: false
+    progress: false,
+    host: 'localhost'
   }
 }
