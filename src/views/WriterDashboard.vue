@@ -75,7 +75,7 @@ export default {
     console.log(decoded);
     console.log(decoded.sub);
     console.log(jwt_decode(this.getUser.access_token).sub);
-    // this.fetchRecordings(this.recordings);
+    this.fetchRecordings(this.recordings);
     // this.recordings.push({
     //   key: 2,
     //   recDate: "March 2, 2022",
@@ -172,6 +172,7 @@ export default {
       })
         .then((response) => {
           if (response.ok) {
+            console.log(response);
             return response.json();
           } else {
             throw response.statusText;
