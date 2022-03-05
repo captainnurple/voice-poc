@@ -173,7 +173,7 @@ export default {
         .then((response) => {
           if (response.ok) {
             console.log(response);
-            return response.json();
+            return response;
           } else {
             throw response.statusText;
           }
