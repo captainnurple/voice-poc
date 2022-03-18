@@ -28,9 +28,10 @@ exports.handler = async (event, context) => {
     })
     .catch((err) => console.error(JSON.stringify(err, null, 2)));
 
+  console.log('returning');
   return {
     statusCode: 200,
-    body: "hello, API GATEWAY success?"
+    body: JSON.stringify({message : "hello, API GATEWAY success?"})
   }
 
 }
