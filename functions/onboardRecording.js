@@ -10,7 +10,8 @@ var q = faunadb.query
 
 var client = new faunadb.Client({
   secret: process.env.FAUNA_SERVER_KEY,
-  domain: 'db.us.fauna.com'
+  domain: 'db.us.fauna.com',
+  queryTimeout: 30000,
 })
 
 const functionsURL =
@@ -62,7 +63,7 @@ exports.handler = async (event, context) => {
     attempt to hit fauna
     */
 
-    client.query(
+    const result = await client.query(
       q.Call(q.Function("onboard_recording_by_netlifyID"), [netlifyID, tlPayload])
     )
     .then(function (res) {
