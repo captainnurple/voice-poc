@@ -82,6 +82,7 @@ exports.handler = async (event, context) => {
         })
       })
     )
+    .then(res => res.json())
     .then(res => {
         console.log('initializeTranscriptionAWS result: ', res)
       })
