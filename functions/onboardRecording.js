@@ -69,12 +69,7 @@ exports.handler = async (event, context) => {
     .then(function (res) {
       console.log('Result:', res);
     })
-    .catch(function (err) { 
-      console.log('Error:', err);
-      // return {
-      //   statusCode : 200,
-      // }
-    }).then(data => {
+    .then(data => {
       fetch(`${functionsURL}/.netlify/functions/initializeTranscriptionAWS/`, {
         method: 'POST',
         body: JSON.stringify({
@@ -82,7 +77,14 @@ exports.handler = async (event, context) => {
         })
       }).then(res => {
         console.log('initializeTranscriptionAWS result: ', res)
+      }).catch(function (err){
+        console.log('Error hitting initializeTranscriptionAWS:', err);
       })
+    }).catch(function (err) { 
+      console.log('Error:', err);
+      // return {
+      //   statusCode : 200,
+      // }
     })
     /*
     end hit attempt
