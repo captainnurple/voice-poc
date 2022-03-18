@@ -75,14 +75,13 @@ exports.handler = async (event, context) => {
       //   statusCode : 200,
       // }
     })
-    .then(data => {
-      return fetch(`${functionsURL}/.netlify/functions/initializeTranscriptionAWS/`, {
+    .then(data => fetch(`${functionsURL}/.netlify/functions/initializeTranscriptionAWS/`, {
         method: 'POST',
         body: JSON.stringify({
           key: tlPayload['results'][':original'][0]['ssl_url']
         })
       })
-    })
+    )
     .then(res => {
         console.log('initializeTranscriptionAWS result: ', res)
       })
