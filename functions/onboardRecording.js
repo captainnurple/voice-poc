@@ -69,26 +69,26 @@ exports.handler = async (event, context) => {
     .then(function (res) {
       console.log('Result:', res);
     })
+    .catch(function (err) { 
+      console.log('Fauna Error:', err);
+      // return {
+      //   statusCode : 200,
+      // }
+    })
     .then(data => {
       return fetch(`${functionsURL}/.netlify/functions/initializeTranscriptionAWS/`, {
         method: 'POST',
         body: JSON.stringify({
           key: tlPayload['results'][':original'][0]['ssl_url']
         })
-      }).then(res => {
+      })
+    })
+    .then(res => {
         console.log('initializeTranscriptionAWS result: ', res)
-      }).catch(function (err){
+      })
+    .catch(function (err){
         console.log('Error hitting initializeTranscriptionAWS:', err);
       })
-    }).catch(function (err) { 
-      console.log('Error:', err);
-      // return {
-      //   statusCode : 200,
-      // }
-    })
-    /*
-    end hit attempt
-    */
   }
   catch (err) {
     console.log("error caught");
