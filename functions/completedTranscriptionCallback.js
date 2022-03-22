@@ -3,9 +3,19 @@ exports.handler = (event, context) => {
   console.log(event);
   console.log(context);
 
-  return {
+  let responseBody = {
+    message: "Hello, World",
+    input: "A thing!"
+  };
+
+  let response = {
     statusCode: 200,
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({body : "hello, World via callback!"})
-  }
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(responseBody)
+  };
+  console.log("response: ", JSON.stringify(response))
+
+  return response;
 }
