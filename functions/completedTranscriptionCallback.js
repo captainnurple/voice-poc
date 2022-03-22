@@ -4,15 +4,15 @@ exports.handler = (event, context) => {
   console.log(context);
 
   let responseBody = {
-    message: "Hello, World",
-    input: "A thing!"
+    message: "Body test",
+    input: "An input!"
   };
 
   let response = {
     statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    // headers: {
+    //   'Content-Type': 'application/json'
+    // },
     body: JSON.stringify(responseBody)
   };
   console.log("response: ", JSON.stringify(response))
