@@ -10,9 +10,9 @@ exports.handler = (event, context) => {
 
   let response = {
     statusCode: 200,
-    // headers: {
-    //   'Content-Type': 'application/json'
-    // },
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(responseBody)
   };
   console.log("response: ", JSON.stringify(response))
