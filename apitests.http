@@ -16,7 +16,7 @@ POST https://boring-varahamihira-cc7a90.netlify.app/.netlify/functions/fetchUser
 content-type: application/json
 
 # {
-#     "event": {
+#     "after": {
 #       "body" : {
 #         "after" : []
 #       }

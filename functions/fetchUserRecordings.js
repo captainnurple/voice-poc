@@ -38,8 +38,9 @@ exports.handler = async (event, context) => {
   // console.log(JSON.parse(fields))
   const { user } = context?.clientContext?.user;
   // const netlifyID = user.id;
-  console.log(`user.id: ${user.id}`)
-  const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
+  console.log(`user.id: ${user.sub}`)
+  // const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
+  const netlifyID = user.sub;
 
   // var after = faunadb.parseJSON(Buffer.from("WyJUZXN0QXVkaW8ubTRhIix7IkB0cyI6IjIwMjItMDItMjRUMDY6MTI6MzcuMDY5MDM2WiJ9LG51bGwseyJAcmVmIjp7ImlkIjoiMzI0NDU0OTAyMjkwOTcyNzQ1IiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiUmVjb3JkaW5nIiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiY29sbGVjdGlvbnMifX19fX19XQ==", "base64").toString("utf8"));
   var after = [];

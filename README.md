@@ -521,3 +521,6 @@ Recording.vue
 catch up on documentation
 
 2/11 I got uppy successfully sending netlifyID and JWT to transloadit and then passing that along to the pingback URL, where I can now decode it successfully in the netlify function. This is huge! I now can use this userID to associate the recording with the proper user!
+
+- Implement Identity refresh when users return to the site after their JWT is expired so they don't get errors or have to re-login. See https://answers.netlify.com/t/vuejs-app-out-of-sync-after-role-updated-externally-via-netlify-functions/31969/4 and https://answers.netlify.com/t/netlify-identity-refresh-role-on-client-side/32055/2
+- 
