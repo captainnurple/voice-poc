@@ -63,6 +63,7 @@ exports.handler = async (event, context) => {
       console.log(res.after)
       console.log(typeof(res.after[0]))
       console.log(typeof(res.data[0][0]))
+      console.log(res.data[0][0].toString())
       console.log(q.ToString(res.data[0][0]))
       console.log(typeof(q.ToString(res.data[0][0])))
       console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
