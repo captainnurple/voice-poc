@@ -68,6 +68,7 @@ exports.handler = async (event, context) => {
       console.log(typeof(q.ToString(res.data[0][0])))
       console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
+      results = res.data
     })
     .catch(function (err) { 
       console.log('Fauna Fetch Error:', err);
@@ -90,6 +91,7 @@ exports.handler = async (event, context) => {
 
   return {
     statusCode: 200,
+    data: JSON.stringify(results)
   }
 
 }
