@@ -28,6 +28,8 @@ exports.handler = async (event, context) => {
     }
   }
 
+  const { identity, user } = context.clientContext;
+
   console.log('FETCH USER RECORDINGS');
   console.log(context);
   console.log(event);
@@ -36,8 +38,6 @@ exports.handler = async (event, context) => {
   const fields = querystring.parse(payload);
 
   // console.log(JSON.parse(fields))
-  const { user } = context?.clientContext?.user;
-  // const netlifyID = user.id;
   console.log(`user.id: ${user.sub}`)
   // const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
   const netlifyID = user.sub;
