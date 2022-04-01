@@ -45,8 +45,10 @@ exports.handler = async (event, context) => {
   // var after = faunadb.parseJSON(Buffer.from("WyJUZXN0QXVkaW8ubTRhIix7IkB0cyI6IjIwMjItMDItMjRUMDY6MTI6MzcuMDY5MDM2WiJ9LG51bGwseyJAcmVmIjp7ImlkIjoiMzI0NDU0OTAyMjkwOTcyNzQ1IiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiUmVjb3JkaW5nIiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiY29sbGVjdGlvbnMifX19fX19XQ==", "base64").toString("utf8"));
   var after = [];
   if('after' in fields) {
-    after = parseJSON(Buffer.from(fields.after, "base64").toString("utf8"));
+    after = faunadb.parseJSON(Buffer.from(fields.after, "base64").toString("utf8"));
   }
+
+  var results = {}
 
   try {
     /*
@@ -59,6 +61,8 @@ exports.handler = async (event, context) => {
     .then(function (res) {
       console.log('Result:', res);
       console.log(res.after)
+      console.log(typeof(res.after[0]))
+      console.log(typeof(res.data[0][0]))
       console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
     })
