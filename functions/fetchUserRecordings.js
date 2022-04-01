@@ -3,16 +3,17 @@
 
 
 const querystring = require('querystring');
-const fetch = require("node-fetch");
+// const fetch = require("node-fetch");
 var faunadb = require('faunadb')
 var q = faunadb.query
 
 var client = new faunadb.Client({
   secret: process.env.FAUNA_SERVER_KEY,
-  domain: 'db.us.fauna.com'
+  domain: 'db.us.fauna.com',
+  queryTimeout: 30000,
 })
 
-// FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
+// TODO FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
 exports.handler = async (event, context) => {
 
@@ -37,6 +38,7 @@ exports.handler = async (event, context) => {
   // console.log(JSON.parse(fields))
   const { user } = context?.clientContext?.user;
   // const netlifyID = user.id;
+  console.log(`user.id: ${user.id}`)
   const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
 
   // var after = faunadb.parseJSON(Buffer.from("WyJUZXN0QXVkaW8ubTRhIix7IkB0cyI6IjIwMjItMDItMjRUMDY6MTI6MzcuMDY5MDM2WiJ9LG51bGwseyJAcmVmIjp7ImlkIjoiMzI0NDU0OTAyMjkwOTcyNzQ1IiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiUmVjb3JkaW5nIiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiY29sbGVjdGlvbnMifX19fX19XQ==", "base64").toString("utf8"));
@@ -50,7 +52,7 @@ exports.handler = async (event, context) => {
     attempt to hit fauna
     */
   //  after = [];
-    client.query(
+    const result = await client.query(
       q.Call(q.Function("fetch_recordings_by_netlifyID"), [netlifyID, after])
     )
     .then(function (res) {
@@ -60,11 +62,12 @@ exports.handler = async (event, context) => {
       // console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
     })
     .catch(function (err) { 
-      console.log('Error:', err);
+      console.log('Fauna Fetch Error:', err);
       // return {
       //   statusCode : 200,
       // }
     })
+    console.log("final result: ", result)
     /*
     end hit attempt
     */
