@@ -1,7 +1,6 @@
 // paginated fetch for lots of recordings
 // way to check just for changes to a single recording (i.e. waiting for transcription to be completed and updated)
 
-
 const querystring = require('querystring');
 // const fetch = require("node-fetch");
 var faunadb = require('faunadb')
@@ -16,8 +15,6 @@ var client = new faunadb.Client({
 // TODO FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?
 
 exports.handler = async (event, context) => {
-
-  /// END LOCAL TESTING
 
   if (!context?.clientContext?.user) { // Verifies logged-in user
     console.log("User Recordings Request denied.");
@@ -39,7 +36,6 @@ exports.handler = async (event, context) => {
 
   // console.log(JSON.parse(fields))
   console.log(`user.id: ${user.sub}`)
-  // const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
   const netlifyID = user.sub;
 
   // var after = faunadb.parseJSON(Buffer.from("WyJUZXN0QXVkaW8ubTRhIix7IkB0cyI6IjIwMjItMDItMjRUMDY6MTI6MzcuMDY5MDM2WiJ9LG51bGwseyJAcmVmIjp7ImlkIjoiMzI0NDU0OTAyMjkwOTcyNzQ1IiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiUmVjb3JkaW5nIiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiY29sbGVjdGlvbnMifX19fX19XQ==", "base64").toString("utf8"));
@@ -48,7 +44,11 @@ exports.handler = async (event, context) => {
     after = faunadb.parseJSON(Buffer.from(fields.after, "base64").toString("utf8"));
   }
 
-  var results = {}
+  var results = {}      
+
+    // const netlifyID = "cb27daef-4bfc-4f69-9d44-113e4605bad2";
+    // var after = [];
+    // var results = {};
 
   try {
     /*
@@ -61,14 +61,18 @@ exports.handler = async (event, context) => {
     .then(function (res) {
       console.log('Result:', res);
       console.log(res.after)
-      console.log(typeof(res.after[0]))
-      console.log(typeof(res.data[0][0]))
-      console.log(res.data[0][0].toString())
-      console.log(q.ToString(res.data[0][0]))
-      console.log(typeof(q.ToString(res.data[0][0])))
-      console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
-      console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
-      results = res.data
+      // console.log(typeof(res.after[0]))
+      // console.log(typeof(res.data[0][0]))
+      // console.log(res.data[0][0].toString())
+      // console.log(q.ToString(res.data[0][0]))
+      // console.log(typeof(q.ToString(res.data[0][0])))
+      // console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
+      // console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
+      results = {
+        before : (res.before.length > 0 ? Buffer.from(JSON.stringify(res.before)).toString("base64") : ''),
+        after : (res.after.length > 0 ? Buffer.from(JSON.stringify(res.after)).toString("base64") : ''),
+        data : res.data,
+      }
     })
     .catch(function (err) { 
       console.log('Fauna Fetch Error:', err);
@@ -89,9 +93,10 @@ exports.handler = async (event, context) => {
     }
   }
 
+  console.log("results: ", results)
   return {
     statusCode: 200,
-    data: JSON.stringify(results)
+    body: JSON.stringify(results)
   }
 
 }

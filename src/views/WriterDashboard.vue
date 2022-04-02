@@ -24,6 +24,7 @@
           v-bind:key="recording.id"
           v-bind:recDate="recording.recDate"
           v-bind:recTitle="recording.recTitle"
+          v-bind:recTranscript="recording.recTranscript"
         />
       </v-sheet>
     </div>
@@ -172,14 +173,14 @@ export default {
       })
         .then((response) => {
           if (response.ok) {
-            console.log(response);
-            return response;
+            return response.json();
           } else {
             throw response.statusText;
           }
         })
         .then((data) => {
           console.log(data);
+          this.loadRecordings(data, recordings);
         })
         .catch((error) => {
           console.log(error);
@@ -204,24 +205,38 @@ export default {
       //   .catch((error) => {
       //     console.log(error);
       //   });
-      const recs = [
-        {
-          id: 3,
-          recDate: "March 3, 2022",
-          recTitle: "Ethan Runs Away",
-        },
-        {
-          id: 2,
-          recDate: "March 2, 2022",
-          recTitle: "Ethan Arrives",
-        },
-        {
-          id: 1,
-          recDate: "March 1, 2022",
-          recTitle: "Ethan Sleeps",
-        },
-      ];
-      recs.forEach((item) => recordings.push(item));
+      // const recs = [
+      //   {
+      //     id: 3,
+      //     recDate: "March 3, 2022",
+      //     recTitle: "Ethan Runs Away",
+      //   },
+      //   {
+      //     id: 2,
+      //     recDate: "March 2, 2022",
+      //     recTitle: "Ethan Arrives",
+      //   },
+      //   {
+      //     id: 1,
+      //     recDate: "March 1, 2022",
+      //     recTitle: "Ethan Sleeps",
+      //   },
+      // ];
+      // recs.forEach((item) => recordings.push(item));
+    },
+    loadRecordings(data, recordingsRef) {
+      var recs = [];
+      console.log(typeof data.data);
+      data.data.forEach((item) => {
+        console.log(item);
+        recs.push({
+          id: Date.parse(item[0]["@ts"]),
+          recDate: item[0]["@ts"].substring(0, 10),
+          recTitle: "",
+          recTranscript: item[2],
+        });
+      });
+      recs.forEach((item) => recordingsRef.push(item));
     },
   },
 };

@@ -6,13 +6,9 @@
         <v-list-item-title class="text-h5 mb-1">
           {{ recTitle }}
         </v-list-item-title>
-        <v-list-item-subtitle
-          >Ethan dove behind the bollard just as the car slammed into it. The
-          vehicle cartwheeled over his head shedding bent metal, sparks, and
-          fuel. He unloaded the rest of his clip at the driver's side window as
-          it twisted into view, but Franklin jerked down out of the way just in
-          time...</v-list-item-subtitle
-        >
+        <v-list-item-subtitle>
+          {{ recTranscript }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
 
@@ -32,6 +28,7 @@ module.exports = {
     // key,
     recDate: String,
     recTitle: String,
+    recTranscript: String,
   },
   // data: function () {
   //   // return {

@@ -12,9 +12,9 @@
 
 # POST http://322a-174-248-207-172.ngrok.io/.netlify/functions/completedTranscriptionCallback
 
-POST https://boring-varahamihira-cc7a90.netlify.app/.netlify/functions/fetchUserRecordings HTTP/1.1
-content-type: application/json
+GET http://localhost:8888/.netlify/functions/fetchUserRecordings 
 
+# POST https://boring-varahamihira-cc7a90.netlify.app/.netlify/functions/fetchUserRecordings HTTP/1.1
 # {
 #     "after": {
 #       "body" : {
