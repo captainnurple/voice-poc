@@ -1,17 +1,14 @@
 <template>
-  <v-card outlined class="mb-2">
-    <v-list-item three-line>
-      <v-list-item-content>
-        <div class="text-overline mb-4">{{ recDate }}</div>
-        <v-list-item-title class="text-h5 mb-1">
-          {{ recTitle }}
-        </v-list-item-title>
-        <v-list-item-subtitle>
-          {{ recTranscript }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
-    </v-list-item>
-
+  <v-card outlined elevation="2" shaped class="mb-3">
+    <v-card-title>
+      {{ recTitle }}
+    </v-card-title>
+    <v-card-subtitle>
+      {{ recDate }}
+    </v-card-subtitle>
+    <v-card-text v-if="recTranscript" style="white-space: pre-line">
+      {{ recTranscript }}
+    </v-card-text>
     <v-card-actions>
       <v-btn icon x-large elevation="2">
         <v-icon>mdi-play</v-icon>

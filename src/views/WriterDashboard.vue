@@ -232,7 +232,7 @@ export default {
         recs.push({
           id: Date.parse(item[0]["@ts"]),
           recDate: item[0]["@ts"].substring(0, 10),
-          recTitle: "",
+          recTitle: item[1],
           recTranscript: item[2],
         });
       });
