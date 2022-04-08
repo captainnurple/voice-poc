@@ -6,9 +6,14 @@
     <v-card-subtitle>
       {{ recDate }}
     </v-card-subtitle>
-    <v-card-text v-if="recTranscript" style="white-space: pre-line">
+    <v-card-text v-if="recTranscript" style="white-space: pre-wrap">
       {{ recTranscript }}
     </v-card-text>
+    <v-skeleton-loader
+      v-if="skeletonTranscript && !recTranscript"
+      type="article"
+    >
+    </v-skeleton-loader>
     <v-card-actions>
       <v-btn icon x-large elevation="2">
         <v-icon>mdi-play</v-icon>
@@ -26,6 +31,7 @@ module.exports = {
     recDate: String,
     recTitle: String,
     recTranscript: String,
+    skeletonTranscript: Boolean,
   },
   // data: function () {
   //   // return {

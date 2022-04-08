@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="text-center">
+    <!-- <div class="text-center">
       <v-btn
         hidden="true"
         id="uppyModalOpenerButton"
@@ -10,10 +10,12 @@
         Upload New Recording
         <v-icon right dark> mdi-cloud-upload </v-icon>
       </v-btn>
-    </div>
-    <v-sheet outlined class="d-flex justify-center mb-6 pa-2">
-      <h3>Upload New Recording</h3>
-      <div id="uppyDashboard"></div>
+    </div> -->
+    <v-sheet outlined class="mb-6 pa-2">
+      <!-- <h3>Upload New Recording</h3> -->
+      <div>
+        <div id="uppyDashboard"></div>
+      </div>
     </v-sheet>
     <div>
       <v-sheet outlined elevation="1" class="pa-2">
@@ -25,7 +27,20 @@
           v-bind:recDate="recording.recDate"
           v-bind:recTitle="recording.recTitle"
           v-bind:recTranscript="recording.recTranscript"
+          v-bind:skeletonTranscript="recording.skeletonTranscript"
         />
+        <v-divider></v-divider>
+        <div id="rec-pages" class="d-flex mb-4">
+          <div class="text-decoration-none text-body-1">
+            <span class="text-h6 text--primary">←&nbsp;</span>
+            <span>Previous 10</span>
+          </div>
+          <div class="spacer"></div>
+          <div class="text-decoration-none text-body-1">
+            <span>Next 10</span>
+            <span class="text-h6 text--primary">&nbsp;→</span>
+          </div>
+        </div>
       </v-sheet>
     </div>
   </div>
@@ -59,6 +74,7 @@ export default {
     //   recTitle: null,
     // },
     recordings: [],
+    recsNav: {},
   }),
   components: {
     Recording,
@@ -70,13 +86,19 @@ export default {
     this.fetchUploadKeys();
   },
   mounted: function mounted() {
+    this.initUppy();
+    const uppyInnerElement = document.getElementsByClassName(
+      "uppy-Dashboard-inner"
+    );
+    uppyInnerElement[0].className = "uppy-Dashboard-inner mx-auto";
+    console.log(uppyInnerElement);
     console.log("mounted");
     console.log(this.getUser.access_token);
     const decoded = jwt_decode(this.getUser.access_token);
     console.log(decoded);
     console.log(decoded.sub);
     console.log(jwt_decode(this.getUser.access_token).sub);
-    this.fetchRecordings(this.recordings);
+    this.fetchRecordings(this.recordings, this.recsNav);
     // this.recordings.push({
     //   key: 2,
     //   recDate: "March 2, 2022",
@@ -101,7 +123,6 @@ export default {
         .then((data) => {
           UPLOAD_KEYS = data;
           console.log(UPLOAD_KEYS);
-          this.initUppy();
         })
         .catch((error) => {
           console.log(error);
@@ -151,6 +172,12 @@ export default {
 
         console.log(`Recording date : ${dateStr}`);
         console.log(`Recording Title : ${uploadedFileName}`);
+        this.recordings.unshift({
+          // id: 3,
+          recDate: dateStr,
+          recTitle: uploadedFileName,
+          skeletonTranscript: true,
+        });
       });
       uppy.on("file-added", (file) => {
         console.log("File added");
@@ -165,7 +192,7 @@ export default {
         });
       });
     },
-    fetchRecordings(recordings) {
+    fetchRecordings(recordings, recsNav) {
       fetch("/.netlify/functions/fetchUserRecordings", {
         headers: {
           Authorization: "Bearer " + this.getUser.access_token,
@@ -180,7 +207,7 @@ export default {
         })
         .then((data) => {
           console.log(data);
-          this.loadRecordings(data, recordings);
+          this.loadRecordings(data, recordings, recsNav);
         })
         .catch((error) => {
           console.log(error);
@@ -224,7 +251,7 @@ export default {
       // ];
       // recs.forEach((item) => recordings.push(item));
     },
-    loadRecordings(data, recordingsRef) {
+    loadRecordings(data, recordingsRef, recsNav) {
       var recs = [];
       console.log(typeof data.data);
       data.data.forEach((item) => {
@@ -234,10 +261,44 @@ export default {
           recDate: item[0]["@ts"].substring(0, 10),
           recTitle: item[1],
           recTranscript: item[2],
+          skeletonTranscript: false,
         });
       });
       recs.forEach((item) => recordingsRef.push(item));
+      if (data.hasOwnProperty("before") && data.before.length > 0) {
+        recsNav["before"] = data.before;
+      }
+      if (data.hasOwnProperty("after") && data.after.length > 0) {
+        recsNav["after"] = data.after;
+      }
+    },
+    pollForTranscript() {
+      // fetch("/.netlify/functions/fetchUserRecordings", {
+      //   headers: {
+      //     Authorization: "Bearer " + this.getUser.access_token,
+      //   },
+      // })
+      //   .then((response) => {
+      //     if (response.ok) {
+      //       return response.json();
+      //     } else {
+      //       throw response.statusText;
+      //     }
+      //   })
+      //   .then((data) => {
+      //     console.log(data);
+      //     this.loadRecordings(data, recordings, recsNav);
+      //   })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
     },
   },
 };
 </script>
+<style scoped>
+.uppy-Dashboard-inner {
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+</style>

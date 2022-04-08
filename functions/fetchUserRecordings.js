@@ -68,10 +68,21 @@ exports.handler = async (event, context) => {
       // console.log(typeof(q.ToString(res.data[0][0])))
       // console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       // console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
+      var cursors = []
+      if (res.before.length > 0) {
+        cursors.push( Buffer.from(JSON.stringify(res.before)).toString("base64"))
+      }
+      res.data.forEach((item) => {
+        cursors.push( Buffer.from(JSON.stringify(item.slice(0,2))).toString("base64"))
+      })
+      if (res.after.length > 0) {
+        cursors.push(Buffer.from(JSON.stringify(res.after)).toString("base64"))
+      }
       results = {
         before : (res.before.length > 0 ? Buffer.from(JSON.stringify(res.before)).toString("base64") : ''),
         after : (res.after.length > 0 ? Buffer.from(JSON.stringify(res.after)).toString("base64") : ''),
         data : res.data,
+        cursors : cursors
       }
     })
     .catch(function (err) { 
