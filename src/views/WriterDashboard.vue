@@ -186,7 +186,7 @@ export default {
         this.interval = setInterval(() => {
           // console.log(`filePrefix : ${filePrefix}`);
           this.pollForTranscript(filePrefix);
-        }, 3000);
+        }, 5000);
       });
       uppy.on("file-added", (file) => {
         console.log("File added");
@@ -303,10 +303,11 @@ export default {
             case "DNE":
             case "transcribing":
               console.log("waiting for transcript...");
+              break;
             case "complete":
               let newData = {
                 id: Date.parse(data.date["@ts"]),
-                recTranscript: data.recTranscript,
+                recTranscript: data.transcript,
                 skeletonTranscript: false,
               };
               Object.assign(this.recordings[0], newData);
