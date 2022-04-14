@@ -25,6 +25,15 @@ const routes = [
     },
     component: () => import(/* webpackChunkName: "dashboard" */ '../views/WriterDashboard.vue'),
   },
+  {
+    path: '/testing',
+    name: 'Testing',
+    meta: {
+      layout: "logged_in_layout",
+      requiresAuth: true
+    },
+    component: () => import(/* webpackChunkName: "testing" */ '../views/Testing.vue'),
+  },
 ]
 
 const router = new VueRouter({

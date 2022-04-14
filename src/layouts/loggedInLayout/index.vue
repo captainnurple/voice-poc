@@ -91,7 +91,7 @@ export default {
       { title: "Dashboard", icon: "mdi-view-dashboard", to: "/dashboard" },
       // { title: "About", icon: "mdi-help-box", to: "/about" },
       { title: "Profile", icon: "mdi-account", to: "/profile" },
-      // { title: "Fauna Testing", icon: "mdi-database", to: "/faunaTesting" },
+      { title: "Testing", icon: "mdi-database", to: "/testing" },
     ],
     // currentUser: null,
   }),

@@ -1,0 +1,41 @@
+Query(
+  Lambda(
+    ["filePrefix", "netlifyID"],
+    Filter(
+      Select(
+        ["data"],
+        Paginate(
+          Events(
+            Select(
+              [0],
+              Intersection(
+                Select(
+                  ["data"],
+                  Paginate(Match(Index("rec_by_filePrefix"), Var("filePrefix")))
+                ),
+                Select(
+                  ["data"],
+                  Paginate(
+                    Match(
+                      Index("recordings_for_user_ref"),
+                      Select(
+                        ["data"],
+                        Paginate(
+                          Match(
+                            Index("user_search_by_netlifyID"),
+                            Var("netlifyID")
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+      Lambda("event", Equals(Select(["action"], Var("event")), "update"))
+    )
+  )
+)

@@ -16,7 +16,7 @@ var client = new faunadb.Client({
 
 const functionsURL =
   process.env.URL == "http://localhost:8888"
-    ? "https://f7f1-76-170-96-113.ngrok.io"
+    ? "http://5867-204-128-192-33.ngrok.io"
     : "https://boring-varahamihira-cc7a90.netlify.app";
 
 // FUTURE: somehow validate that the payload originated from the same user as the user value in the payload. Like, in theory a user could log in with one account, submit their transloadit payload with the userID of another account, and their recording would go in there instead. Right?

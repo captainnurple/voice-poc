@@ -59,7 +59,7 @@ var UPLOAD_KEYS = {};
 
 const notifyURL =
   process.env.NODE_ENV == "development"
-    ? "http://b1cb-204-128-192-33.ngrok.io"
+    ? "http://5867-204-128-192-33.ngrok.io"
     : "https://boring-varahamihira-cc7a90.netlify.app";
 
 // const TRANSLOADIT_KEY = process.env.TRANSLOADIT_KEY;
@@ -75,6 +75,7 @@ export default {
     // },
     recordings: [],
     recsNav: {},
+    interval: null,
   }),
   components: {
     Recording,
@@ -162,22 +163,30 @@ export default {
       });
       uppy.on("complete", (result) => {
         console.log("complete");
-        // console.log(JSON.stringify(result, null, 2));
+        console.log(JSON.stringify(result, null, 2));
         // Format data for display
         const options = { year: "numeric", month: "long", day: "numeric" };
         const today = new Date();
         const dateStr = today.toLocaleDateString("en-US", options);
         // const resObj = JSON.parse(result);
         const uploadedFileName = result.transloadit[0].uploads[0].name;
-
+        const filePrefix = result.transloadit[0].fields.filePrefix;
         console.log(`Recording date : ${dateStr}`);
         console.log(`Recording Title : ${uploadedFileName}`);
+        console.log(`filePrefix : ${filePrefix}`);
+
         this.recordings.unshift({
           // id: 3,
           recDate: dateStr,
           recTitle: uploadedFileName,
           skeletonTranscript: true,
         });
+        // Start polling for transcript
+        this.pollForTranscript(filePrefix);
+        this.interval = setInterval(() => {
+          // console.log(`filePrefix : ${filePrefix}`);
+          this.pollForTranscript(filePrefix);
+        }, 3000);
       });
       uppy.on("file-added", (file) => {
         console.log("File added");
@@ -272,27 +281,45 @@ export default {
         recsNav["after"] = data.after;
       }
     },
-    pollForTranscript() {
-      // fetch("/.netlify/functions/fetchUserRecordings", {
-      //   headers: {
-      //     Authorization: "Bearer " + this.getUser.access_token,
-      //   },
-      // })
-      //   .then((response) => {
-      //     if (response.ok) {
-      //       return response.json();
-      //     } else {
-      //       throw response.statusText;
-      //     }
-      //   })
-      //   .then((data) => {
-      //     console.log(data);
-      //     this.loadRecordings(data, recordings, recsNav);
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
+    pollForTranscript: function (filePrefix) {
+      console.log("polling");
+      fetch("/.netlify/functions/fetchRecordingUpdates", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + this.getUser.access_token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          filePrefix: `${filePrefix}`,
+        }),
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log("Data : ", data);
+          this.testResponse = data;
+          switch (data.status) {
+            case "DNE":
+            case "transcribing":
+              console.log("waiting for transcript...");
+            case "complete":
+              let newData = {
+                id: Date.parse(data.date["@ts"]),
+                recTranscript: data.recTranscript,
+                skeletonTranscript: false,
+              };
+              Object.assign(this.recordings[0], newData);
+              clearInterval(this.interval);
+          }
+        })
+        .catch((err) => {
+          console.error("Err : ", err);
+        });
     },
+  },
+  beforeDestroy: function () {
+    clearInterval(this.interval);
   },
 };
 </script>

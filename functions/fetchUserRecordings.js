@@ -78,6 +78,7 @@ exports.handler = async (event, context) => {
       if (res.after.length > 0) {
         cursors.push(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       }
+      console.log('cursors : ', cursors)
       results = {
         before : (res.before.length > 0 ? Buffer.from(JSON.stringify(res.before)).toString("base64") : ''),
         after : (res.after.length > 0 ? Buffer.from(JSON.stringify(res.after)).toString("base64") : ''),

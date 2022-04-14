@@ -172,3 +172,55 @@ Filter(
     )
   )
 )
+
+# First check whether a doc exists, then do some stuff. This will be important for e.g. transcript polling
+
+Let(
+  {
+    recRef : Select('ref', Get(Match(Index("rec_by_filePrefix"), "cb27daef_4bfc_4f69_9d44_113e4605bad2__1645769224902"))),
+  },
+  If(
+    Exists(Var('recRef')),
+    Map([Var('recRef')],Lambda('ref', {entry:Var('ref')})),
+    'DNE'
+  )
+)
+
+# HUGE: check whether recording exists, if it doesn't, return DNE, if it does w/ no transcript, return status, otherwise return status with transcript
+
+Let({
+  passedPrefix : 'cb27daef_4bfc_4f69_9d44_113e4605bad2__1649780305155',
+  recExists : Exists(
+    Match(Index('rec_by_filePrefix'), Var('passedPrefix'))
+  )
+  },
+  If(
+    Var('recExists'),
+    Map([Get(
+      Match(Index('rec_by_filePrefix'), Var('passedPrefix'))
+      )],
+      Lambda('rec',
+        If(
+          ContainsPath(['data', 'transcript'], Var('rec')),
+          {
+            status:'complete',
+            ref: Select(['ref'], Var('rec')),
+            filePrefix: Select(['data', 'transloadit', 'fields', 'filePrefix'], Var('rec')),
+            transcript:Select(['data','transcript'], Var('rec'))
+          },
+          {
+            status:'transcribing',
+            ref: Select(['ref'], Var('rec')),
+            filePrefix: Select(['data', 'transloadit', 'fields', 'filePrefix'], Var('rec')),
+          }
+        )
+      )
+    ),
+    Map(['DNE'], Lambda('x', {
+      status: Var('x'),
+      filePrefix: Var('passedPrefix')
+    }))
+  ),
+)
+
+# TODO Above with netlifyID security filter
