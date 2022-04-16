@@ -31,15 +31,27 @@
         />
         <v-divider></v-divider>
         <div id="rec-pages" class="d-flex mb-4">
-          <div class="text-decoration-none text-body-1">
+          <v-btn
+            text
+            v-bind:disabled="!beforeNavExists"
+            color="primary"
+            class="text-decoration-none text-body-1"
+            v-on:click="recNavTo('before')"
+          >
             <span class="text-h6 text--primary">←&nbsp;</span>
             <span>Previous 10</span>
-          </div>
+          </v-btn>
           <div class="spacer"></div>
-          <div class="text-decoration-none text-body-1">
+          <v-btn
+            text
+            v-bind:disabled="!afterNavExists"
+            color="primary"
+            class="text-decoration-none text-body-1"
+            v-on:click="recNavTo('after')"
+          >
             <span>Next 10</span>
             <span class="text-h6 text--primary">&nbsp;→</span>
-          </div>
+          </v-btn>
         </div>
       </v-sheet>
     </div>
@@ -82,6 +94,24 @@ export default {
   },
   computed: {
     ...mapGetters("user", ["getUser"]),
+    beforeNavExists: function () {
+      if (this.recsNav.hasOwnProperty("before")) {
+        if (this.recsNav.before.length > 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+    afterNavExists: function () {
+      if (this.recsNav.hasOwnProperty("after")) {
+        console.log("has after");
+        if (this.recsNav["after"].length > 0) {
+          console.log("has after and length");
+          return true;
+        }
+      }
+      return false;
+    },
   },
   created: function created() {
     this.fetchUploadKeys();
@@ -99,7 +129,7 @@ export default {
     console.log(decoded);
     console.log(decoded.sub);
     console.log(jwt_decode(this.getUser.access_token).sub);
-    this.fetchRecordings(this.recordings, this.recsNav);
+    this.fetchRecordings();
     // this.recordings.push({
     //   key: 2,
     //   recDate: "March 2, 2022",
@@ -108,6 +138,16 @@ export default {
   },
   watch: {},
   methods: {
+    recNavTo: function (selector) {
+      var cursor =
+        selector == "before" ? this.recsNav.before : this.recsNav.after;
+      console.log(selector, cursor);
+      if (selector == "before") {
+        this.fetchRecordings(cursor, null);
+      } else {
+        this.fetchRecordings(null, cursor);
+      }
+    },
     fetchUploadKeys() {
       fetch("/.netlify/functions/uploadKeyAndID/", {
         headers: {
@@ -201,11 +241,17 @@ export default {
         });
       });
     },
-    fetchRecordings(recordings, recsNav) {
+    fetchRecordings(before = null, after = null) {
       fetch("/.netlify/functions/fetchUserRecordings", {
+        method: "POST",
         headers: {
           Authorization: "Bearer " + this.getUser.access_token,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          before: before,
+          after: after,
+        }),
       })
         .then((response) => {
           if (response.ok) {
@@ -216,51 +262,13 @@ export default {
         })
         .then((data) => {
           console.log(data);
-          this.loadRecordings(data, recordings, recsNav);
+          this.loadRecordings(data);
         })
         .catch((error) => {
           console.log(error);
         });
-      // fetch("/.netlify/functions/uploadKeyAndID/", {
-      //   headers: {
-      //     Authorization: "Bearer " + this.getUser.access_token,
-      //   },
-      // })
-      //   .then((response) => {
-      //     if (response.ok) {
-      //       return response.json();
-      //     } else {
-      //       throw response.statusText;
-      //     }
-      //   })
-      //   .then((data) => {
-      //     UPLOAD_KEYS = data;
-      //     console.log(UPLOAD_KEYS);
-      //     this.initUppy();
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
-      // const recs = [
-      //   {
-      //     id: 3,
-      //     recDate: "March 3, 2022",
-      //     recTitle: "Ethan Runs Away",
-      //   },
-      //   {
-      //     id: 2,
-      //     recDate: "March 2, 2022",
-      //     recTitle: "Ethan Arrives",
-      //   },
-      //   {
-      //     id: 1,
-      //     recDate: "March 1, 2022",
-      //     recTitle: "Ethan Sleeps",
-      //   },
-      // ];
-      // recs.forEach((item) => recordings.push(item));
     },
-    loadRecordings(data, recordingsRef, recsNav) {
+    loadRecordings(data) {
       var recs = [];
       console.log(typeof data.data);
       data.data.forEach((item) => {
@@ -273,12 +281,20 @@ export default {
           skeletonTranscript: false,
         });
       });
-      recs.forEach((item) => recordingsRef.push(item));
+      this.recordings = recs;
+      // recs.forEach((item) => recordingsRef.push(item));
       if (data.hasOwnProperty("before") && data.before.length > 0) {
-        recsNav["before"] = data.before;
+        this.$set(this.recsNav, "before", data.before);
+      } else {
+        this.$set(this.recsNav, "before", "");
       }
       if (data.hasOwnProperty("after") && data.after.length > 0) {
-        recsNav["after"] = data.after;
+        this.$set(this.recsNav, "after", data.after);
+      } else {
+        this.$set(this.recsNav, "after", "");
+      }
+      if (data.hasOwnProperty("cursors")) {
+        this.$set(this.recsNav, "cursors", data.cursors);
       }
     },
     pollForTranscript: function (filePrefix) {
@@ -312,6 +328,15 @@ export default {
               };
               Object.assign(this.recordings[0], newData);
               clearInterval(this.interval);
+              var tmp_cursors = this.recsNav.cursors;
+              tmp_cursors.unshift(data.cursor);
+              tmp_cursors.pop();
+              this.$set(this.recsNav, "cursors", tmp_cursors);
+              this.$set(
+                this.recsNav,
+                "after",
+                this.recsNav.cursors[this.recsNav.cursors.length - 1]
+              );
           }
         })
         .catch((err) => {

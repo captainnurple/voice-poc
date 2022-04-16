@@ -31,18 +31,25 @@ exports.handler = async (event, context) => {
   console.log(context);
   console.log(event);
   // console.log(process.env);
-  const payload = event.body;
-  const fields = querystring.parse(payload);
+  const body = JSON.parse(event.body);
 
-  // console.log(JSON.parse(fields))
+  console.log(body)
   console.log(`user.id: ${user.sub}`)
   const netlifyID = user.sub;
 
   // var after = faunadb.parseJSON(Buffer.from("WyJUZXN0QXVkaW8ubTRhIix7IkB0cyI6IjIwMjItMDItMjRUMDY6MTI6MzcuMDY5MDM2WiJ9LG51bGwseyJAcmVmIjp7ImlkIjoiMzI0NDU0OTAyMjkwOTcyNzQ1IiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiUmVjb3JkaW5nIiwiY29sbGVjdGlvbiI6eyJAcmVmIjp7ImlkIjoiY29sbGVjdGlvbnMifX19fX19XQ==", "base64").toString("utf8"));
-  var after = [];
-  if('after' in fields) {
-    after = faunadb.parseJSON(Buffer.from(fields.after, "base64").toString("utf8"));
+  var after = null;
+  if(body.hasOwnProperty('after') && body.after && (body.after.length > 0)) {
+    console.log('after : ', body.after)
+    after = faunadb.parseJSON(Buffer.from(body.after, "base64").toString("utf8"));
   }
+  var before = null;
+  if(body.hasOwnProperty('before') && body.before && (body.before.length > 0)) {
+    console.log('before : ', body.before)
+    before = faunadb.parseJSON(Buffer.from(body.before, "base64").toString("utf8"));
+  }
+
+  const PAGINATION_SIZE = 10;
 
   var results = {}      
 
@@ -55,12 +62,17 @@ exports.handler = async (event, context) => {
     attempt to hit fauna
     */
   //  after = [];
+  // TODO: add "before" into netlifyID function
+    // const result = await client.query(
+    //   q.Call(q.Function("fetch_recordings_by_netlifyID"), [netlifyID, after])
+    // )
     const result = await client.query(
-      q.Call(q.Function("fetch_recordings_by_netlifyID"), [netlifyID, after])
+      q.Call(q.Function("paginated_rec_fields_by_user_sort_by_date_desc"), [netlifyID, PAGINATION_SIZE, before, after])
     )
     .then(function (res) {
-      console.log('Result:', res);
-      console.log(res.after)
+      // console.log('Result:', res);
+      // console.log(res.after)
+
       // console.log(typeof(res.after[0]))
       // console.log(typeof(res.data[0][0]))
       // console.log(res.data[0][0].toString())
@@ -69,19 +81,19 @@ exports.handler = async (event, context) => {
       // console.log(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       // console.log(faunadb.parseJSON(Buffer.from(Buffer.from(JSON.stringify(res.after)).toString("base64"), "base64").toString("utf8")))
       var cursors = []
-      if (res.before.length > 0) {
+      if (res.hasOwnProperty('before') && res.before.length > 0) {
         cursors.push( Buffer.from(JSON.stringify(res.before)).toString("base64"))
       }
       res.data.forEach((item) => {
         cursors.push( Buffer.from(JSON.stringify(item.slice(0,2))).toString("base64"))
       })
-      if (res.after.length > 0) {
+      if (res.hasOwnProperty('after') && res.after.length > 0) {
         cursors.push(Buffer.from(JSON.stringify(res.after)).toString("base64"))
       }
-      console.log('cursors : ', cursors)
+      // console.log('cursors : ', cursors)
       results = {
-        before : (res.before.length > 0 ? Buffer.from(JSON.stringify(res.before)).toString("base64") : ''),
-        after : (res.after.length > 0 ? Buffer.from(JSON.stringify(res.after)).toString("base64") : ''),
+        before : ((res.hasOwnProperty('before') && res.before.length > 0) ? Buffer.from(JSON.stringify(res.before)).toString("base64") : ''),
+        after : ((res.hasOwnProperty('after') && res.after.length > 0) ? Buffer.from(JSON.stringify(res.after)).toString("base64") : ''),
         data : res.data,
         cursors : cursors
       }
@@ -92,7 +104,7 @@ exports.handler = async (event, context) => {
       //   statusCode : 200,
       // }
     })
-    console.log("final result: ", result)
+    // console.log("final result: ", result)
     /*
     end hit attempt
     */
@@ -105,7 +117,7 @@ exports.handler = async (event, context) => {
     }
   }
 
-  console.log("results: ", results)
+  // console.log("results: ", results)
   return {
     statusCode: 200,
     body: JSON.stringify(results)
