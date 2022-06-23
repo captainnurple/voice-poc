@@ -63,6 +63,7 @@ import Robodog from "@uppy/robodog";
 import { mapGetters } from "vuex";
 import jwt_decode from "jwt-decode";
 import Recording from "../components/Recording.vue";
+import apiCalls from "../mixins/apiCalls.js";
 
 require("@uppy/core/dist/style.css");
 require("@uppy/dashboard/dist/style.css");
@@ -80,6 +81,7 @@ const notifyURL =
 
 export default {
   name: "WriterDashboard",
+  mixins: [apiCalls],
   data: () => ({
     // recordings: {
     //   recDate: null,
@@ -124,11 +126,14 @@ export default {
     uppyInnerElement[0].className = "uppy-Dashboard-inner mx-auto";
     console.log(uppyInnerElement);
     console.log("mounted");
-    console.log(this.getUser.access_token);
-    const decoded = jwt_decode(this.getUser.access_token);
+    // console.log(this.getUser.access_token);
+    console.log(this.userAuthToken());
+    // const decoded = jwt_decode(this.getUser.access_token);
+    const decoded = jwt_decode(this.userAuthToken());
     console.log(decoded);
     console.log(decoded.sub);
-    console.log(jwt_decode(this.getUser.access_token).sub);
+    // console.log(jwt_decode(this.getUser.access_token).sub);
+    console.log(jwt_decode(this.userAuthToken()).sub);
     this.fetchRecordings();
     // this.recordings.push({
     //   key: 2,
@@ -151,7 +156,8 @@ export default {
     fetchUploadKeys() {
       fetch("/.netlify/functions/uploadKeyAndID/", {
         headers: {
-          Authorization: "Bearer " + this.getUser.access_token,
+          // Authorization: "Bearer " + this.getUser.access_token,
+          Authorization: "Bearer " + this.userAuthToken(),
         },
       })
         .then((response) => {
@@ -230,12 +236,13 @@ export default {
       });
       uppy.on("file-added", (file) => {
         console.log("File added");
-        const niid = jwt_decode(this.getUser.access_token).sub;
+        // const niid = jwt_decode(this.getUser.access_token).sub;
+        const niid = jwt_decode(this.userAuthToken()).sub;
         const timeStamp = Date.now();
         const prefix = `${niid.replaceAll("-", "_")}__${timeStamp}`;
         console.log(`filePrefix: ${prefix}`);
         uppy.setFileMeta(file.id, {
-          netlifyUserToken: this.getUser.access_token,
+          netlifyUserToken: this.getUser.access_token, // TODO I think this may be wrong and should be an immutable user ID? The access_token changes over time (every hour!)... Oh or maybe this is passing the entire JWT, which would include immutable and mutable characteristics both (e.g. user ID vs auth_token). Just need to ensure I'm not persisting anything in db or doing aws stuff relying on the consistency of a mutable value...
           netlifyID: niid,
           filePrefix: prefix,
         });
@@ -245,7 +252,8 @@ export default {
       fetch("/.netlify/functions/fetchUserRecordings", {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + this.getUser.access_token,
+          // Authorization: "Bearer " + this.getUser.access_token,
+          Authorization: "Bearer " + this.userAuthToken(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -302,7 +310,8 @@ export default {
       fetch("/.netlify/functions/fetchRecordingUpdates", {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + this.getUser.access_token,
+          // Authorization: "Bearer " + this.getUser.access_token,
+          Authorization: "Bearer " + this.userAuthToken(),
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

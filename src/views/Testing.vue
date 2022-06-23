@@ -2,14 +2,18 @@
   <div class="testing">
     <h1>This is a testing page</h1>
     <button v-on:click="pollForTranscript">Poll for Transcript</button>
+    <br />
+    <button v-on:click="testAuthToken">Test Auth Token</button>
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import apiCalls from "../mixins/apiCalls.js";
 
 export default {
   name: "Testing",
+  mixins: [apiCalls],
   data: () => ({
     testResponse: null,
   }),
@@ -17,6 +21,9 @@ export default {
     ...mapGetters("user", ["getUser"]),
   },
   methods: {
+    testAuthToken() {
+      console.log(this.userAuthToken());
+    },
     pollForTranscript: function (event) {
       console.log("polling");
       const filePrefix = "cb27daef_4bfc_4f69_9d44_113e4605bad2__1648936843898";

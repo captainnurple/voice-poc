@@ -123,36 +123,37 @@ Intersection(
   )
 )
 
-# Grab UPDATE events for a specific file prefix, checked against NetlifyID for valid ownership
+# Function to grab UPDATE events for a specific file prefix, checked against NetlifyID for valid ownership
 
 
-Filter(
-  Select(
-    ["data"],
-    Paginate(
-      Events(
-        Select(
-          [0],
-          Intersection(
+Query(
+  Lambda(
+    ["filePrefix", "netlifyID"],
+    Map(
+      Select(
+        ["data"],
+        Paginate(
+          Events(
             Select(
-              ["data"],
-              Paginate(
-                Match(
-                  Index("rec_by_filePrefix"), "cb27daef_4bfc_4f69_9d44_113e4605bad2__1649116799673"
-                )
-              )
-            ),
-            Select(
-              ["data"],
-              Paginate(
-                Match(
-                  Index("recordings_for_user_ref"), 
-                  Select(
-                    ["data"],
-                    Paginate(
-                      Match(
-                        Index("user_search_by_netlifyID"), 
-                        "cb27daef-4bfc-4f69-9d44-113e4605bad2"
+              [0],
+              Intersection(
+                Select(
+                  ["data"],
+                  Paginate(Match(Index("rec_by_filePrefix"), Var("filePrefix")))
+                ),
+                Select(
+                  ["data"],
+                  Paginate(
+                    Match(
+                      Index("recordings_for_user_ref"),
+                      Select(
+                        ["data"],
+                        Paginate(
+                          Match(
+                            Index("user_search_by_netlifyID"),
+                            Var("netlifyID")
+                          )
+                        )
                       )
                     )
                   )
@@ -161,14 +162,19 @@ Filter(
             )
           )
         )
-      )
-    )
-  ),
-  Lambda(
-    "event",
-    Equals(
-      Select(["action"], Var("event")),
-      "update"
+      ),
+      Lambda("event", [
+        If(
+          ContainsField("title", Select(["data"], Var("event"))),
+          { fileData: Var("event") },
+          null
+        ),
+        If(
+          Equals(Select(["action"], Var("event")), "update"),
+          { update: Var("event") },
+          null
+        )
+      ])
     )
   )
 )
@@ -223,4 +229,4 @@ Let({
   ),
 )
 
-# TODO Above with netlifyID security filter
+# Above with netlifyID security filter

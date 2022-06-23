@@ -14,6 +14,7 @@ var client = new faunadb.Client({
 // .then(function (res) { console.log('Result:', res) })
 // .catch(function (err) { console.log('Error:', err) })
 
+// Call Fauna function with test data
 client.query(
   q.Call(q.Function("create_recording_by_netlifyID"), ["1", "testRecordingRemote 2", "http:wowzers"])
 )
